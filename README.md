@@ -1,2 +1,2 @@
 # Infracloud_projects
-Laboratorios para projecto web con K8S en AWS
+Laboratorios para proyecto web con K8S en AWS
