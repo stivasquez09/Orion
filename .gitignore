@@ -1,0 +1,11 @@
+# GIT-GITHUB
+
+*.pem
+*.pem.pub
+terraform.tfstate
+terraform.tfstate*
+.terraform*
+.DS_Store
+.infracost
+.tflint.hcl
+.vscode
