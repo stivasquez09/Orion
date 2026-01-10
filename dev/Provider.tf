@@ -9,7 +9,6 @@ provider "aws" {
 
     }
   }
-  access_key = "AKIAV336K2Z24BZSKMIS"
-  secret_key = "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"
+
 
 }
