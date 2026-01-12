@@ -17,9 +17,10 @@ on:
         required: true
         type: choice
         options:
-          - dev
-          - staging
-          - prod
+          - Dev
+          - Qa
+          - Prod
+          - Uat
       action:
         description: 'Acción de Terraform a ejecutar'
         required: true
@@ -41,7 +42,7 @@ jobs:
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       TF_VAR_environment: ${{ github.event.inputs.environment }}
-      WORKING_DIR: ${{ github.event.inputs.working_directory }}
+      WORKING_DIR: ${{ github.event.inputs.working_directory }}/${{ github.event.inputs.environment }}
       ENVIRONMENT: ${{ github.event.inputs.environment }}
       ACTION: ${{ github.event.inputs.action }}
 
@@ -72,7 +73,7 @@ jobs:
         working-directory: ./${{ env.WORKING_DIR }}
         run: |
           terraform init \
-            -backend-config="key=terraform/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}/terraform.tfstate"
+            -backend-config="key=terraform/${{ env.ENVIRONMENT }}/${{ github.event.inputs.working_directory }}/terraform.tfstate"
 
       - name: Terraform Workspace
         working-directory: ./${{ env.WORKING_DIR }}
@@ -93,9 +94,9 @@ jobs:
         working-directory: ./${{ env.WORKING_DIR }}
         run: |
           if [ "${{ env.ACTION }}" == "destroy" ]; then
-            terraform plan -destroy -var-file="environments/${{ env.ENVIRONMENT }}.tfvars" -out=tfplan
+            terraform plan -destroy -out=tfplan
           else
-            terraform plan -var-file="environments/${{ env.ENVIRONMENT }}.tfvars" -out=tfplan
+            terraform plan -out=tfplan
           fi
 
       - name: Terraform Plan Output
@@ -148,4 +149,4 @@ jobs:
       - name: Terraform Destroy
         if: env.ACTION == 'destroy'
         working-directory: ./${{ env.WORKING_DIR }}
-        run: terraform destroy -var-file="environments/${{ env.ENVIRONMENT }}.tfvars" -auto-approve
+        run: terraform destroy -auto-approve
