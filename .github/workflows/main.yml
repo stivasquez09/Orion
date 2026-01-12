@@ -1,24 +1,67 @@
 name: Terraform CI/CD
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_dispatch:
+    inputs:
+      working_directory:
+        description: 'Carpeta de Terraform a desplegar'
+        required: true
+        type: choice
+        options:
+          - nueva_data
+          - bancolombia
+          - ruteandoelmundo
+          - coca-cola
+      environment:
+        description: 'Ambiente a desplegar'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      action:
+        description: 'Acción de Terraform a ejecutar'
+        required: true
+        type: choice
+        options:
+          - apply
+          - destroy
+# Permisos necesarios para OIDC
+permissions:
+  id-token: write
+  contents: read
+  issues: write
 
 jobs:
   terraform:
-    name: Terraform Plan & Apply
+    name: Terraform ${{ github.event.inputs.action }} - ${{ github.event.inputs.working_directory }} (${{ github.event.inputs.environment }})
     runs-on: ubuntu-latest
 
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
+      TF_VAR_environment: ${{ github.event.inputs.environment }}
+      WORKING_DIR: ${{ github.event.inputs.working_directory }}
+      ENVIRONMENT: ${{ github.event.inputs.environment }}
+      ACTION: ${{ github.event.inputs.action }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: Display configuration
+        run: |
+          echo "🔧 Configuración del despliegue:"
+          echo "  📁 Directorio: ${{ env.WORKING_DIR }}"
+          echo "  🌍 Ambiente: ${{ env.ENVIRONMENT }}"
+          echo "  ⚡ Acción: ${{ env.ACTION }}"
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: GHA-${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-${{ github.run_number }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -26,14 +69,83 @@ jobs:
           terraform_version: 1.6.6
 
       - name: Terraform Init
-        run: terraform init
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: |
+          terraform init \
+            -backend-config="key=terraform/${{ env.ENVIRONMENT }}/${{ env.WORKING_DIR }}/terraform.tfstate"
+
+      - name: Terraform Workspace
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: |
+          terraform workspace select ${{ env.ENVIRONMENT }} || terraform workspace new ${{ env.ENVIRONMENT }}
 
       - name: Terraform Validate
+        working-directory: ./${{ env.WORKING_DIR }}
         run: terraform validate
 
-      - name: Terraform Plan
-        run: terraform plan
+      - name: Terraform Format Check
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: terraform fmt -check -recursive
+        continue-on-error: true
 
-      - name: Terraform Apply (only on push to main)
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply -auto-approve
+      - name: Terraform Plan
+        id: plan
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: |
+          if [ "${{ env.ACTION }}" == "destroy" ]; then
+            terraform plan -destroy -var-file="environments/${{ env.ENVIRONMENT }}.tfvars" -out=tfplan
+          else
+            terraform plan -var-file="environments/${{ env.ENVIRONMENT }}.tfvars" -out=tfplan
+          fi
+
+      - name: Terraform Plan Output
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: terraform show tfplan
+
+      - name: Approve Apply
+        if: env.ACTION == 'apply'
+        uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: ${{ github.actor }}
+          minimum-approvals: 1
+          issue-title: "Aprobar Terraform Apply en ${{ env.ENVIRONMENT }}"
+          issue-body: |
+            **🔍 Revisa el plan antes de aprobar**
+            
+            - **Directorio:** `${{ env.WORKING_DIR }}`
+            - **Ambiente:** `${{ env.ENVIRONMENT }}`
+            - **Acción:** Apply
+            
+            Por favor revisa el plan de Terraform en los logs del workflow antes de aprobar.
+            
+            [Ver Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: Terraform Apply
+        if: env.ACTION == 'apply'
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: terraform apply -auto-approve tfplan
+
+      - name: Approve Destroy
+        if: env.ACTION == 'destroy'
+        uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: ${{ github.actor }}
+          minimum-approvals: 1
+          issue-title: "⚠️ APROBAR TERRAFORM DESTROY en ${{ env.ENVIRONMENT }}"
+          issue-body: |
+            **🚨 ADVERTENCIA: Esta acción destruirá recursos**
+            
+            - **Directorio:** `${{ env.WORKING_DIR }}`
+            - **Ambiente:** `${{ env.ENVIRONMENT }}`
+            - **Acción:** DESTROY
+            
+            ⚠️ **Esta acción es irreversible. Revisa cuidadosamente el plan antes de aprobar.**
+            
+            [Ver Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: Terraform Destroy
+        if: env.ACTION == 'destroy'
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: terraform destroy -var-file="environments/${{ env.ENVIRONMENT }}.tfvars" -auto-approve
