@@ -48,7 +48,22 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+      - name: 🔍 DEBUG - Ver estructura del repositorio
+        run: |
+          echo "📂 Contenido raíz del repositorio:"
+          ls -la
+          echo ""
+          echo "📂 Estructura completa (primeros 2 niveles):"
+          find . -maxdepth 2 -type d
+          echo ""
+          echo "🔍 Buscando carpeta: ${{ env.WORKING_DIR }}"
+          if [ -d "${{ env.WORKING_DIR }}" ]; then
+            echo "✅ La carpeta ${{ env.WORKING_DIR }} EXISTE"
+            ls -la "${{ env.WORKING_DIR }}"
+          else
+            echo "❌ La carpeta ${{ env.WORKING_DIR }} NO EXISTE"
+          fi        
 
       - name: Display configuration
         run: |
@@ -70,10 +85,9 @@ jobs:
           terraform_version: 1.6.6
 
       - name: Terraform Init
-        working-directory: ./${{ env.WORKING_DIR }}
+
         run: |
-          terraform init \
-            -backend-config="key=terraform/${{ env.ENVIRONMENT }}/${{ github.event.inputs.working_directory }}/terraform.tfstate"
+          terraform init 
 
       - name: Terraform Workspace
         working-directory: ./${{ env.WORKING_DIR }}
