@@ -85,82 +85,14 @@ jobs:
           terraform_version: 1.6.6
 
       - name: Terraform Init
-
-        run: |
-          terraform init 
-
-      - name: Terraform Workspace
-        working-directory: ./${{ env.WORKING_DIR }}
-        run: |
-          terraform workspace select ${{ env.ENVIRONMENT }} || terraform workspace new ${{ env.ENVIRONMENT }}
+        run: terraform init
 
       - name: Terraform Validate
-        working-directory: ./${{ env.WORKING_DIR }}
         run: terraform validate
 
-      - name: Terraform Format Check
-        working-directory: ./${{ env.WORKING_DIR }}
-        run: terraform fmt -check -recursive
-        continue-on-error: true
-
       - name: Terraform Plan
-        id: plan
-        working-directory: ./${{ env.WORKING_DIR }}
-        run: |
-          if [ "${{ env.ACTION }}" == "destroy" ]; then
-            terraform plan -destroy -out=tfplan
-          else
-            terraform plan -out=tfplan
-          fi
-
-      - name: Terraform Plan Output
-        working-directory: ./${{ env.WORKING_DIR }}
-        run: terraform show tfplan
-
-      - name: Approve Apply
-        if: env.ACTION == 'apply'
-        uses: trstringer/manual-approval@v1
-        with:
-          secret: ${{ github.TOKEN }}
-          approvers: ${{ github.actor }}
-          minimum-approvals: 1
-          issue-title: "Aprobar Terraform Apply en ${{ env.ENVIRONMENT }}"
-          issue-body: |
-            **🔍 Revisa el plan antes de aprobar**
-            
-            - **Directorio:** `${{ env.WORKING_DIR }}`
-            - **Ambiente:** `${{ env.ENVIRONMENT }}`
-            - **Acción:** Apply
-            
-            Por favor revisa el plan de Terraform en los logs del workflow antes de aprobar.
-            
-            [Ver Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+        run: terraform plan
 
       - name: Terraform Apply
-        if: env.ACTION == 'apply'
-        working-directory: ./${{ env.WORKING_DIR }}
-        run: terraform apply -auto-approve tfplan
-
-      - name: Approve Destroy
-        if: env.ACTION == 'destroy'
-        uses: trstringer/manual-approval@v1
-        with:
-          secret: ${{ github.TOKEN }}
-          approvers: ${{ github.actor }}
-          minimum-approvals: 1
-          issue-title: "⚠️ APROBAR TERRAFORM DESTROY en ${{ env.ENVIRONMENT }}"
-          issue-body: |
-            **🚨 ADVERTENCIA: Esta acción destruirá recursos**
-            
-            - **Directorio:** `${{ env.WORKING_DIR }}`
-            - **Ambiente:** `${{ env.ENVIRONMENT }}`
-            - **Acción:** DESTROY
-            
-            ⚠️ **Esta acción es irreversible. Revisa cuidadosamente el plan antes de aprobar.**
-            
-            [Ver Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-      - name: Terraform Destroy
-        if: env.ACTION == 'destroy'
-        working-directory: ./${{ env.WORKING_DIR }}
-        run: terraform destroy -auto-approve
+        if: inputs.action == 'apply'
+        run: terraform apply -auto-approve
