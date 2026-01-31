@@ -36,7 +36,7 @@ permissions:
 
 jobs:
   terraform:
-    name: Terraform ${{ github.event.inputs.action }} - ${{ github.event.inputs.working_directory }} (${{ github.event.inputs.environment }})
+    name: Terraform ${{ github.event.inputs.action }}-${{ github.event.inputs.working_directory }} (${{ github.event.inputs.environment }})
     runs-on: ubuntu-latest
 
     env:
@@ -62,7 +62,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
-          role-session-name: GHA-${{ env.WORKING_DIR }}-${{ env.ENVIRONMENT }}-${{ github.run_number }}
+          role-session-name: GHA-${{ env.ENVIRONMENT }}-${{ github.run_number }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
