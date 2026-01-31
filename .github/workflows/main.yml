@@ -8,7 +8,7 @@ on:
         required: true
         type: choice
         options:
-          - nueva_data
+          - Orion
           - bancolombia
           - ruteandoelmundo
           - coca-cola
@@ -17,10 +17,10 @@ on:
         required: true
         type: choice
         options:
-          - Dev
-          - Qa
-          - Prod
-          - Uat
+          - dev
+          - qa
+          - prod
+          - uat
       action:
         description: 'Acción de Terraform a ejecutar'
         required: true
