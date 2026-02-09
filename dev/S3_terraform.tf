@@ -1,6 +1,6 @@
 module "s3_bucket" {
   source = "git::https://github.com/terraform-aws-modules/terraform-aws-s3-bucket.git"
-  bucket = "tfstate-s3-bucket-devstiv"
+  bucket = "${var.environment}-${data.aws_caller_identity.current.account_id}-InfraCloud-s3-bucket"
   create_bucket = true
   
   versioning = {
