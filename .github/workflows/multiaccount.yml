@@ -1,0 +1,168 @@
+name: PIPELINE CI/CD AWS
+
+on:
+  workflow_dispatch:
+    inputs:
+      working_directory:
+        description: 'Carpeta de Terraform a desplegar'
+        required: true
+        type: choice
+        options:
+          - Orion
+          - bancolombia
+          - ruteandoelmundo
+          - coca-cola
+      environment:
+        description: 'Ambiente a desplegar'
+        required: true
+        type: choice
+        options:
+          - dev
+          - qa
+          - prod
+          - uat
+      action:
+        description: 'Acción de Terraform a ejecutar'
+        required: true
+        type: choice
+        options:
+          - apply
+          - destroy
+
+# Permisos necesarios para OIDC
+permissions:
+  id-token: write
+  contents: read
+  issues: write
+
+jobs:
+  terraform:
+    name: Terraform ${{ github.event.inputs.action }}-${{ github.event.inputs.working_directory }} (${{ github.event.inputs.environment }})
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      TF_VAR_environment: ${{ github.event.inputs.environment }}
+      WORKING_DIR: ${{ github.event.inputs.working_directory }}/${{ github.event.inputs.environment }}
+      ENVIRONMENT: ${{ github.event.inputs.environment }}
+      ACTION: ${{ github.event.inputs.action }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔍 DEBUG - Ver estructura del repositorio
+        run: |
+          echo "📂 Contenido raíz del repositorio:"
+          ls -la
+          echo ""
+          echo "📂 Estructura completa (primeros 2 niveles):"
+          find . -maxdepth 2 -type d
+          echo ""
+          echo "🔍 Buscando carpeta: ${{ env.WORKING_DIR }}"
+          if [ -d "${{ env.WORKING_DIR }}" ]; then
+            echo "✅ La carpeta ${{ env.WORKING_DIR }} EXISTE"
+            ls -la "${{ env.WORKING_DIR }}"
+          else
+            echo "❌ La carpeta ${{ env.WORKING_DIR }} NO EXISTE"
+          fi
+
+      - name: Display configuration
+        run: |
+          echo "🔧 Configuración del despliegue:"
+          echo "  📁 Directorio: ${{ env.WORKING_DIR }}"
+          echo "  🌍 Ambiente: ${{ env.ENVIRONMENT }}"
+          echo "  ⚡ Acción: ${{ env.ACTION }}"
+
+      - name: Set AWS Role ARN based on environment
+        id: aws-role
+        run: |
+          case "${{ env.ENVIRONMENT }}" in
+            dev)
+              echo "role_arn=${{ secrets.AWS_ROLE_ARN_DEV }}" >> $GITHUB_OUTPUT
+              echo "region=${{ secrets.AWS_REGION_DEV }}" >> $GITHUB_OUTPUT
+              ;;
+            qa)
+              echo "role_arn=${{ secrets.AWS_ROLE_ARN_QA }}" >> $GITHUB_OUTPUT
+              echo "region=${{ secrets.AWS_REGION_QA }}" >> $GITHUB_OUTPUT
+              ;;
+            prod)
+              echo "role_arn=${{ secrets.AWS_ROLE_ARN_PROD }}" >> $GITHUB_OUTPUT
+              echo "region=${{ secrets.AWS_REGION_PROD }}" >> $GITHUB_OUTPUT
+              ;;
+            uat)
+              echo "role_arn=${{ secrets.AWS_ROLE_ARN_UAT }}" >> $GITHUB_OUTPUT
+              echo "region=${{ secrets.AWS_REGION_UAT }}" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "❌ Ambiente no reconocido: ${{ env.ENVIRONMENT }}"
+              exit 1
+              ;;
+          esac
+          echo "✅ Rol configurado para ambiente: ${{ env.ENVIRONMENT }}"
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ steps.aws-role.outputs.role_arn }}
+          aws-region: ${{ steps.aws-role.outputs.region }}
+          role-session-name: GHA-${{ env.ENVIRONMENT }}-${{ github.run_number }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Terraform Init
+        working-directory: ${{ env.ENVIRONMENT }}
+        run: terraform init
+
+      - name: Terraform Validate
+        working-directory: ${{ env.ENVIRONMENT }}
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: ${{ env.ENVIRONMENT }}
+        run: terraform plan
+
+      - name: Terraform Apply
+        if: github.event.inputs.action == 'apply'
+        working-directory: ${{ env.ENVIRONMENT }}
+        run: terraform apply -auto-approve
+
+      - name: Terraform Destroy
+        if: github.event.inputs.action == 'destroy'
+        working-directory: ${{ env.ENVIRONMENT }}
+        run: terraform destroy -auto-approve
+# ```
+
+# ---
+
+# ## 🔑 Secrets que necesitas crear en GitHub
+
+# Ve a: **Settings → Secrets and variables → Actions → New repository secret**
+
+# Crea estos secrets:
+
+# ### **Para DEV (Cuenta AWS 1):**
+# ```
+# AWS_ROLE_ARN_DEV: arn:aws:iam::111111111111:role/github-terraform-deploy-role-dev
+# AWS_REGION_DEV: us-east-1
+# ```
+
+# ### **Para QA (Cuenta AWS 2):**
+# ```
+# AWS_ROLE_ARN_QA: arn:aws:iam::222222222222:role/github-terraform-deploy-role-qa
+# AWS_REGION_QA: us-west-2
+# ```
+
+# ### **Para PROD (Cuenta AWS 3):**
+# ```
+# AWS_ROLE_ARN_PROD: arn:aws:iam::333333333333:role/github-terraform-deploy-role-prod
+# AWS_REGION_PROD: us-east-1
+# ```
+
+# ### **Para UAT (Cuenta AWS 4):**
+# ```
+# AWS_ROLE_ARN_UAT: arn:aws:iam::444444444444:role/github-terraform-deploy-role-uat
+# AWS_REGION_UAT: eu-west-1
