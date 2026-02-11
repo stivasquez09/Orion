@@ -23,7 +23,9 @@ locals {
   folders = {
     incoming  = "${var.environment}/payments/incoming/"
     processed = "${var.environment}/payments/processed/"
-    archive   = "${var.environment}/payments/archive/nueva_data"
+    archive   = "${var.environment}/payments/archive/"
+    nuevadata = "${var.environment}/payments/archive/nueva_data/"
+    promesas  = "${var.environment}/payments/archive/promesas/"
   }
 }
 
