@@ -20,20 +20,19 @@ module "s3_bucket" {
 }
 
 locals {
-  year      = formatdate("YYYY", timestamp())
-  month     = formatdate("MM", timestamp())
-  base_path = "env=${var.environment}/app=${var.application}"
-  folders = [
-    "${local.base_path}/",
-    "${local.base_path}/year=${formatdate("YYYY", timestamp())}/",
-    "${local.base_path}/year=${formatdate("YYYY", timestamp())}/month=${formatdate("MM", timestamp())}/"
-  ]
+  folders = {
+    incoming  = "${var.environment}/payments/incoming/"
+    processed = "${var.environment}/payments/processed/"
+    archive   = "${var.environment}/payments/archive/"
+  }
 }
 
+
 resource "aws_s3_object" "folders" {
-  for_each = toset(local.folders)
+  for_each = local.folders
 
   bucket  = module.s3_bucket.s3_bucket_id
   key     = each.value
   content = ""
 }
+
