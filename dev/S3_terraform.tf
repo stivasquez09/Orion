@@ -21,13 +21,13 @@ module "s3_bucket" {
 
 locals {
   folders = {
-    incoming           = "${var.environment}/payments/incoming/"
-    processed          = "${var.environment}/payments/processed/"
-    archive            = "${var.environment}/payments/archive/"
-    nuevadata          = "${var.environment}/payments/archive/nueva_data/"
-    promesas           = "${var.environment}/payments/archive/promesas/"
-    orders_incoming    = "${var.environment}/orders/incoming/"
-    orders_processed   = "${var.environment}/orders/processed/"
+    incoming         = "${var.environment}/payments/incoming/"
+    processed        = "${var.environment}/payments/processed/"
+    archive          = "${var.environment}/payments/archive/"
+    nuevadata        = "${var.environment}/payments/archive/nueva_data/"
+    promesas         = "${var.environment}/payments/archive/promesas/"
+    orders_incoming  = "${var.environment}/orders/incoming/"
+    orders_processed = "${var.environment}/orders/processed/"
   }
 }
 
@@ -76,6 +76,13 @@ resource "aws_s3_bucket_policy" "this" {
         ]
         Resource = "arn:aws:s3:::${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket/${var.environment}/payments/incoming/*"
       },
+      {
+        Sid       = "DenyWriteProcessed"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:PutObject"
+        Resource  = "arn:aws:s3:::${module.s3_bucket.s3_bucket_id}/${var.environment}/payments/processed/*"
+      },
 
       # 3️⃣ Permitir lectura en archive
       {
@@ -95,10 +102,10 @@ resource "aws_s3_bucket_policy" "this" {
         Sid       = "DenyDeletes"
         Effect    = "Deny"
         Principal = "*"
-        Action    = [
+        Action = [
           "s3:DeleteObject"
         ]
-        Resource  = "arn:aws:s3:::${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket/*"
+        Resource = "arn:aws:s3:::${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket/*"
       }
     ]
   })
