@@ -101,7 +101,7 @@ resource "aws_s3_bucket_policy" "this" {
       {
         Sid       = "DenyDeletes"
         Effect    = "Allow"
-        Principal = "*"
+        Principal = { AWS = "arn:aws:iam::403455006325:role/github-terraform-deploy-role" }
         Action = [
           "s3:DeleteObject"
         ]
