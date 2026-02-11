@@ -81,7 +81,7 @@ resource "aws_s3_bucket_policy" "this" {
         Effect    = "Deny"
         Principal = "*"
         Action    = "s3:PutObject"
-        Resource  = "arn:aws:s3:::${module.s3_bucket.s3_bucket_id}/${var.environment}/payments/processed/*"
+        Resource  = "arn:aws:s3:::${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket/${var.environment}/payments/processed/*"
       },
 
       # 3️⃣ Permitir lectura en archive
