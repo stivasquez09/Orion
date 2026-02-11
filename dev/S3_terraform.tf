@@ -69,7 +69,7 @@ resource "aws_s3_bucket_policy" "this" {
         Sid    = "AllowWriteIncoming"
         Effect = "Allow"
         Principal = {
-          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/payments-writer"
+          AWS = "arn:aws:iam::403455006325:role/github-terraform-deploy-role"
         }
         Action = [
           "s3:PutObject"
@@ -82,7 +82,7 @@ resource "aws_s3_bucket_policy" "this" {
         Sid    = "AllowReadArchive"
         Effect = "Allow"
         Principal = {
-          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/payments-reader"
+          AWS = "arn:aws:iam::403455006325:role/github-terraform-deploy-role"
         }
         Action = [
           "s3:GetObject"
