@@ -19,26 +19,42 @@ module "s3_bucket" {
   ]
 }
 
-locals {
-  folders = {
-    incoming         = "${var.environment}/payments/incoming/"
-    processed        = "${var.environment}/payments/processed/"
-    archive          = "${var.environment}/payments/archive/"
-    nuevadata        = "${var.environment}/payments/archive/nueva_data/"
-    promesas         = "${var.environment}/payments/archive/promesas/"
-    orders_incoming  = "${var.environment}/orders/incoming/"
-    orders_processed = "${var.environment}/orders/processed/"
-  }
-}
+# locals {
+#   folders = {
+#     incoming         = "${var.environment}/payments/incoming/"
+#     processed        = "${var.environment}/payments/processed/"
+#     archive          = "${var.environment}/payments/archive/"
+#     nuevadata        = "${var.environment}/payments/archive/nueva_data/"
+#     promesas         = "${var.environment}/payments/archive/promesas/"
+#     orders_incoming  = "${var.environment}/orders/incoming/"
+#     orders_processed = "${var.environment}/orders/processed/"
+#   }
+# }
 
+
+# resource "aws_s3_object" "folders" {
+#   for_each = local.folders
+
+#   bucket  = "${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket"
+#   key     = each.value
+#   content = ""
+# }
+
+locals {
+  folders = [
+    "${var.environment}/payments/",
+    "${var.environment}/payments/recuados"
+
+  ]
+}
 
 resource "aws_s3_object" "folders" {
-  for_each = local.folders
+  for_each = { for key in local.folders : key => key }
 
-  bucket  = "${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket"
-  key     = each.value
-  content = ""
+  bucket = "${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket"
+  key    = each.value
 }
+
 
 resource "aws_s3_bucket_policy" "this" {
   bucket = "${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket"
