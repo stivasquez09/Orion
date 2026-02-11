@@ -21,11 +21,13 @@ module "s3_bucket" {
 
 locals {
   folders = {
-    incoming  = "${var.environment}/payments/incoming/"
-    processed = "${var.environment}/payments/processed/"
-    archive   = "${var.environment}/payments/archive/"
-    nuevadata = "${var.environment}/payments/archive/nueva_data/"
-    promesas  = "${var.environment}/payments/archive/promesas/"
+    incoming           = "${var.environment}/payments/incoming/"
+    processed          = "${var.environment}/payments/processed/"
+    archive            = "${var.environment}/payments/archive/"
+    nuevadata          = "${var.environment}/payments/archive/nueva_data/"
+    promesas           = "${var.environment}/payments/archive/promesas/"
+    orders_incoming    = "${var.environment}/orders/incoming/"
+    orders_processed   = "${var.environment}/orders/processed/"
   }
 }
 
