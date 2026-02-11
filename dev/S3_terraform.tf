@@ -31,7 +31,7 @@ locals {
 resource "aws_s3_object" "folders" {
   for_each = local.folders
 
-  bucket  = module.s3_bucket.s3_bucket_id
+  bucket  = "${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket"
   key     = each.value
   content = ""
 }
