@@ -40,3 +40,66 @@ resource "aws_s3_object" "folders" {
   content = ""
 }
 
+resource "aws_s3_bucket_policy" "this" {
+  bucket = "${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+
+      # 1️⃣ Forzar HTTPS
+      {
+        Sid       = "DenyInsecureTransport"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          "arn:aws:s3:::${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket",
+          "arn:aws:s3:::${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket/*"
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
+          }
+        }
+      },
+
+      # 2️⃣ Permitir escribir solo en incoming
+      {
+        Sid    = "AllowWriteIncoming"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/payments-writer"
+        }
+        Action = [
+          "s3:PutObject"
+        ]
+        Resource = "arn:aws:s3:::${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket/${var.environment}/payments/incoming/*"
+      },
+
+      # 3️⃣ Permitir lectura en archive
+      {
+        Sid    = "AllowReadArchive"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/payments-reader"
+        }
+        Action = [
+          "s3:GetObject"
+        ]
+        Resource = "arn:aws:s3:::${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket/${var.environment}/payments/archive/*"
+      },
+
+      # 4️⃣ Denegar borrado global
+      {
+        Sid       = "DenyDeletes"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = [
+          "s3:DeleteObject"
+        ]
+        Resource  = "arn:aws:s3:::${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket/*"
+      }
+    ]
+  })
+}
