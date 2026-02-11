@@ -100,7 +100,7 @@ resource "aws_s3_bucket_policy" "this" {
       # 4️⃣ Denegar borrado global
       {
         Sid       = "DenyDeletes"
-        Effect    = "Deny"
+        Effect    = "allow"
         Principal = "*"
         Action = [
           "s3:DeleteObject"
