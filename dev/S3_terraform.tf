@@ -20,6 +20,8 @@ module "s3_bucket" {
 }
 
 locals {
+  year      = formatdate("YYYY", timestamp())
+  month     = formatdate("MM", timestamp())
   base_path = "env=${var.environment}/app=${var.application}"
   folders = [
     "${local.base_path}/",
