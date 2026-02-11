@@ -42,8 +42,11 @@ module "s3_bucket" {
 
 locals {
   folders = [
-    "${var.environment}/payments/",
-    "${var.environment}/payments/recuados"
+    "${var.environment}/backups/",
+    "${var.environment}/backups/ec2/",
+    "${var.environment}/orders/",
+    "${var.environment}/orders/recaudos/"
+
 
   ]
 }
@@ -85,7 +88,7 @@ resource "aws_s3_bucket_policy" "this" {
         Sid    = "AllowWriteIncoming"
         Effect = "Allow"
         Principal = {
-          AWS = "arn:aws:iam::403455006325:role/github-terraform-deploy-role"
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/github-terraform-deploy-role"
         }
         Action = [
           "s3:PutObject"
@@ -105,7 +108,7 @@ resource "aws_s3_bucket_policy" "this" {
         Sid    = "AllowReadArchive"
         Effect = "Allow"
         Principal = {
-          AWS = "arn:aws:iam::403455006325:role/github-terraform-deploy-role"
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/github-terraform-deploy-role"
         }
         Action = [
           "s3:GetObject"
@@ -117,7 +120,7 @@ resource "aws_s3_bucket_policy" "this" {
       {
         Sid       = "DenyDeletes"
         Effect    = "Allow"
-        Principal = { AWS = "arn:aws:iam::403455006325:role/github-terraform-deploy-role" }
+        Principal = { AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/github-terraform-deploy-role" }
         Action = [
           "s3:DeleteObject"
         ]
