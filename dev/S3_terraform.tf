@@ -88,19 +88,19 @@ resource "aws_s3_bucket_policy" "this" {
         Sid    = "AllowWriteIncoming"
         Effect = "Allow"
         Principal = {
-          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/github-terraform-deploy-role"
+          AWS = data.aws_iam_role.deploy.arn
         }
         Action = [
           "s3:PutObject"
         ]
-        Resource = "arn:aws:s3:::${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket/${var.environment}/payments/incoming/*"
+        Resource = "arn:aws:s3:::${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket/${var.environment}/orders/recaudos/*"
       },
       {
         Sid       = "DenyWriteProcessed"
         Effect    = "Deny"
         Principal = "*"
         Action    = "s3:PutObject"
-        Resource  = "arn:aws:s3:::${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket/${var.environment}/payments/processed/*"
+        Resource  = "arn:aws:s3:::${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket/${var.environment}/backups/ec2/*"
       },
 
       # 3️⃣ Permitir lectura en archive
@@ -108,7 +108,7 @@ resource "aws_s3_bucket_policy" "this" {
         Sid    = "AllowReadArchive"
         Effect = "Allow"
         Principal = {
-          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/github-terraform-deploy-role"
+          AWS = data.aws_iam_role.deploy.arn
         }
         Action = [
           "s3:GetObject"
