@@ -3,7 +3,8 @@ resource "aws_secretsmanager_secret" "this" {
 
   name                    = each.key
   description             = "Secret managed by Terraform"
-  recovery_window_in_days = 7
+  recovery_window_in_days = 0
+
 
   tags = {
     Environment = "prod"
