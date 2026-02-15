@@ -96,13 +96,11 @@ resource "aws_s3_bucket_policy" "this" {
         Resource = "arn:aws:s3:::${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket/${var.environment}/orders/recaudos/*"
       },
       {
-        Sid    = "DenyWriteProcessed"
-        Effect = "Deny"
-        Principal = {
-          AWS = data.aws_iam_role.deploy.arn
-        }
-        Action   = "s3:PutObject"
-        Resource = "arn:aws:s3:::${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket/${var.environment}/backups/ec2/*"
+        Sid       = "DenyWriteProcessed"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:PutObject"
+        Resource  = "arn:aws:s3:::${var.environment}-${data.aws_caller_identity.current.account_id}-infracloud-s3-bucket/${var.environment}/backups/ec2/*"
       },
 
       # 3️⃣ Permitir lectura en archive
