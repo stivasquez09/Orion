@@ -14,8 +14,8 @@ variable "application" {
   description = "Carpetas para bucket Orion"
 }
 
-variable "secrets" {
-  description = "Mapa de secretos a crear"
-  type        = map(any)
-}
+# variable "secrets" {
+#   description = "Mapa de secretos a crear"
+#   type        = map(any)
+# }
 
