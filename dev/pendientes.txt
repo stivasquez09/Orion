@@ -1,0 +1,7 @@
+# pendiente por construir 
+* KMS
+* Secrets Manager
+* ALB
+* Api Gateway
+* Lambda
+* cloudwath

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       working_directory:
-        description: 'Carpeta de Terraform a desplegar'
+        description: 'Proyecto de Terraform a desplegar'
         required: true
         type: choice
         options:
@@ -80,19 +80,19 @@ jobs:
           case "${{ env.ENVIRONMENT }}" in
             dev)
               echo "role_arn=${{ secrets.AWS_ROLE_ARN_DEV }}" >> $GITHUB_OUTPUT
-              echo "region=${{ secrets.AWS_REGION_DEV }}" >> $GITHUB_OUTPUT
+              echo "region=${{ secrets.AWS_REGION }}" >> $GITHUB_OUTPUT
               ;;
             qa)
               echo "role_arn=${{ secrets.AWS_ROLE_ARN_QA }}" >> $GITHUB_OUTPUT
-              echo "region=${{ secrets.AWS_REGION_QA }}" >> $GITHUB_OUTPUT
+              echo "region=${{ secrets.AWS_REGION }}" >> $GITHUB_OUTPUT
               ;;
             prod)
               echo "role_arn=${{ secrets.AWS_ROLE_ARN_PROD }}" >> $GITHUB_OUTPUT
-              echo "region=${{ secrets.AWS_REGION_PROD }}" >> $GITHUB_OUTPUT
+              echo "region=${{ secrets.AWS_REGION }}" >> $GITHUB_OUTPUT
               ;;
             uat)
               echo "role_arn=${{ secrets.AWS_ROLE_ARN_UAT }}" >> $GITHUB_OUTPUT
-              echo "region=${{ secrets.AWS_REGION_UAT }}" >> $GITHUB_OUTPUT
+              echo "region=${{ secrets.AWS_REGION }}" >> $GITHUB_OUTPUT
               ;;
             *)
               echo "❌ Ambiente no reconocido: ${{ env.ENVIRONMENT }}"
