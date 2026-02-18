@@ -14,10 +14,10 @@ variable "application" {
   description = "Carpetas para bucket Orion"
 }
 
-variable "secrets" {
-  description = "Mapa de secretos a crear"
-  type        = map(any)
-}
+# variable "secrets" {
+#   description = "Mapa de secretos a crear"
+#   type        = map(any)
+# }
 
 #  aws secretsmanager delete-secret   --secret-id prod/redis-auth   --force-delete-without-recovery
 #  aws secretsmanager delete-secret   --secret-id prod/api-key   --force-delete-without-recovery
