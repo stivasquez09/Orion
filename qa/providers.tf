@@ -4,7 +4,7 @@ provider "aws" {
     tags = {
       project      = "Orion"
       CostCenter   = "10.20.30"
-      Environment  = "DEV"
+      Environment  = "QA"
       terraform_by = "InfraCloud"
 
     }
