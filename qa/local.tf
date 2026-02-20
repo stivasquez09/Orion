@@ -1,14 +1,8 @@
 locals {
   secrets = {
-    "prod/db-password" = {
+    "stivenelmejor" = {
       username = "admin"
-      password = "StrongPass123!"
-    }
-    "prod/redis-auth" = {
-      token = "asdh89asdh89asd"
-    }
-    "prod/api-key" = {
-      key = "API-KEY-9999"
+      password = "pruebas123"
     }
   }
 }
