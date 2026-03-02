@@ -1,7 +1,7 @@
-# variable "deploy_role_name" {
-#   description = "Nombre del rol IAM usado por GitHub Actions para desplegar"
-#   type        = string
-# }
+variable "deploy_role_name" {
+  description = "Nombre del rol IAM usado por GitHub Actions para desplegar"
+  type        = string
+}
 
 variable "environment" {
   default     = "DEV"
