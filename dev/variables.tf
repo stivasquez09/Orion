@@ -4,9 +4,13 @@ variable "deploy_role_name" {
 }
 
 variable "environment" {
-  default     = "DEV"
-  description = "etiqueta para ambiente"
+  description = "Ambiente de despliegue (dev, qa, prod, uat)"
+  type        = string
+}
 
+variable "project_name" {
+  description = "Nombre del proyecto"
+  type        = string
 }
 
 variable "application" {

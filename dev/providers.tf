@@ -2,9 +2,9 @@ provider "aws" {
   region = "us-east-1"
   default_tags {
     tags = {
-      project      = "Orion"
+      project      = var.project_name
       CostCenter   = "10.20.30"
-      Environment  = "DEV"
+      Environment  = var.environment
       Team = "InfraCloud"
 
     }
