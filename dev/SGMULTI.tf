@@ -12,3 +12,15 @@
 #   egress_rules  = lookup(local.security_groups, each.key, {})["egress_rules"]
 #   tags          = each.value.tags
 # }
+
+# module "security_group" {
+#   source   = "git::https://github.com/stivasquez09/Terraform_Modules_AWS.git//SG?ref=master"
+#   for_each = local.security_groups
+
+#   vpc_id        = each.value.vpc_id
+#   name          = each.value.name
+#   description   = each.value.description
+#   ingress_rules = each.value.ingress_rules
+#   egress_rules  = each.value.egress_rules
+#   tags          = each.value.tags
+# }

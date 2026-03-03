@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       working_directory:
-        description: 'Carpeta de Terraform a desplegar'
+        description: "Carpeta de Terraform a desplegar"
         required: true
         type: choice
         options:
@@ -15,7 +15,7 @@ on:
           - ruteandoelmundo
           - coca-cola
       environment:
-        description: 'Ambiente a desplegar'
+        description: "Ambiente a desplegar"
         required: true
         type: choice
         options:
@@ -24,7 +24,7 @@ on:
           - prod
           - uat
       action:
-        description: 'Acción de Terraform a ejecutar'
+        description: "Acción de Terraform a ejecutar"
         required: true
         type: choice
         options:
@@ -45,9 +45,10 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       TF_VAR_environment: ${{ github.event.inputs.environment }}
       TF_VAR_deploy_role_name: ${{ secrets.AWS_ROLE_NAME}}
-      WORKING_DIR: ${{ github.event.inputs.working_directory }}/${{ github.event.inputs.environment }}
+      WORKING_DIR: ${{ github.event.inputs.working_directory }}
       ENVIRONMENT: ${{ github.event.inputs.environment }}
       ACTION: ${{ github.event.inputs.action }}
+      PROJECT: ${{ github.event.inputs.working_directory }}
 
     steps:
       - name: Checkout repository
@@ -55,18 +56,18 @@ jobs:
       - name: 🔍 DEBUG - Ver estructura del repositorio
         run: |
           echo "📂 Contenido raíz del repositorio:"
-          ls -la
+          ls -ltr
           echo ""
           echo "📂 Estructura completa (primeros 2 niveles):"
           find . -maxdepth 2 -type d
           echo ""
-          echo "🔍 Buscando carpeta: ${{ env.WORKING_DIR }}"
+          echo "🔍 Buscando carpeta: ${{ env.ENVIRONMENT }}"
           if [ -d "${{ env.WORKING_DIR }}" ]; then
-            echo "✅ La carpeta ${{ env.WORKING_DIR }} EXISTE"
-            ls -la "${{ env.WORKING_DIR }}"
+            echo "✅ La carpeta ${{ env.ENVIRONMENT }} EXISTE"
+            ls -la "${{ env.ENVIRONMENT }}"
           else
-            echo "❌ La carpeta ${{ env.WORKING_DIR }} NO EXISTE"
-          fi        
+            echo "❌ La carpeta ${{ env.ENVIRONMENT }} NO EXISTE"
+          fi
 
       - name: Display configuration
         run: |
@@ -74,6 +75,27 @@ jobs:
           echo "  📁 Directorio: ${{ env.WORKING_DIR }}"
           echo "  🌍 Ambiente: ${{ env.ENVIRONMENT }}"
           echo "  ⚡ Acción: ${{ env.ACTION }}"
+      - name: 🔄 Sync trunk files to environment
+        run: |
+          echo "🔄 Sincronizando archivos de trunk a ${ENVIRONMENT}..."
+
+          TRUNK_DIR="${PROJECT}/trunk"
+          ENV_DIR="${ENVIRONMENT}"
+
+          if [ -d "$TRUNK_DIR" ]; then
+            for file in "$TRUNK_DIR"/*.tf; do
+              filename=$(basename "$file")
+              
+              if [ ! -f "${ENV_DIR}/${filename}" ]; then
+                echo "  📋 Copiando ${filename}"
+                cp "$file" "${ENV_DIR}/${filename}"
+              else
+                echo "  ⏭️  ${filename} ya existe en ${ENVIRONMENT}, usando versión local"
+              fi
+            done
+          fi
+
+          echo "✅ Sincronización completa"
 
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -87,7 +109,7 @@ jobs:
         with:
           terraform_version: 1.6.6
 
-      - name: Terraform Init    
+      - name: Terraform Init
         run: terraform init
 
       - name: Terraform Validate

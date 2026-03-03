@@ -5,7 +5,7 @@ provider "aws" {
       project      = "Orion"
       CostCenter   = "10.20.30"
       Environment  = "DEV"
-      terraform_by = "InfraCloud"
+      Team = "InfraCloud"
 
     }
   }
