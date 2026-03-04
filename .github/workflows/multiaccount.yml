@@ -60,7 +60,6 @@ jobs:
           echo "🔄 Sincronizando archivos de trunk a ${ENVIRONMENT}..."
           pwd
           ls -ltrh
-          cd ..
 
           TRUNK_DIR="${GITHUB_WORKSPACE}/trunk"
           ENV_DIR="${ENVIRONMENT}"
