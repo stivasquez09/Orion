@@ -54,28 +54,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🔍 DEBUG - Ver estructura del repositorio
-        run: |
-          echo "📂 Contenido raíz del repositorio:"
-          ls -la
-          echo ""
-          echo "📂 Estructura completa (primeros 2 niveles):"
-          find . -maxdepth 2 -type d
-          echo ""
-          echo "🔍 Buscando carpeta: ${{ env.WORKING_DIR }}"
-          if [ -d "${{ env.WORKING_DIR }}" ]; then
-            echo "✅ La carpeta ${{ env.WORKING_DIR }} EXISTE"
-            ls -la "${{ env.WORKING_DIR }}"
-          else
-            echo "❌ La carpeta ${{ env.WORKING_DIR }} NO EXISTE"
-          fi
-
-      - name: Display configuration
-        run: |
-          echo "🔧 Configuración del despliegue:"
-          echo "  📁 Directorio: ${{ env.WORKING_DIR }}"
-          echo "  🌍 Ambiente: ${{ env.ENVIRONMENT }}"
-          echo "  ⚡ Acción: ${{ env.ACTION }}"
 
       - name: 🔄 Sync trunk files to environment
         run: |
