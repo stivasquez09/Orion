@@ -58,6 +58,7 @@ jobs:
         run: |
           echo "📂 Contenido raíz del repositorio:"
           ls -la
+          pwd
           echo ""
           echo "📂 Estructura completa (primeros 2 niveles):"
           find . -maxdepth 2 -type d
