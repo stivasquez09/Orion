@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       working_directory:
-        description: 'Proyecto de Terraform a desplegar'
+        description: "Proyecto de Terraform a desplegar"
         required: true
         type: choice
         options:
@@ -13,7 +13,7 @@ on:
           - ruteandoelmundo
           - coca-cola
       environment:
-        description: 'Ambiente a desplegar'
+        description: "Ambiente a desplegar"
         required: true
         type: choice
         options:
@@ -22,7 +22,7 @@ on:
           - prod
           - uat
       action:
-        description: 'Acción de Terraform a ejecutar'
+        description: "Acción de Terraform a ejecutar"
         required: true
         type: choice
         options:
@@ -43,10 +43,12 @@ jobs:
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       TF_VAR_environment: ${{ github.event.inputs.environment }}
+      TF_VAR_project_name: ${{github.event.inputs.working_directory}}
       TF_VAR_deploy_role_name: ${{ secrets.AWS_ROLE_NAME}}
-      WORKING_DIR: ${{ github.event.inputs.working_directory }}/${{ github.event.inputs.environment }}
+      WORKING_DIR: ${{ github.event.inputs.working_directory }}
       ENVIRONMENT: ${{ github.event.inputs.environment }}
       ACTION: ${{ github.event.inputs.action }}
+      PROJECT: ${{ github.event.inputs.working_directory }}
 
     steps:
       - name: Checkout repository
@@ -74,6 +76,32 @@ jobs:
           echo "  📁 Directorio: ${{ env.WORKING_DIR }}"
           echo "  🌍 Ambiente: ${{ env.ENVIRONMENT }}"
           echo "  ⚡ Acción: ${{ env.ACTION }}"
+
+      - name: 🔄 Sync trunk files to environment
+        run: |
+          echo "🔄 Sincronizando archivos de trunk a ${ENVIRONMENT}..."
+          pwd
+          ls -ltrh
+          cd ..
+
+          TRUNK_DIR="${GITHUB_WORKSPACE}/trunk"
+          ENV_DIR="${ENVIRONMENT}"
+
+          if [ -d "$TRUNK_DIR" ]; then
+            for file in "$TRUNK_DIR"/*.tf; do
+              filename=$(basename "$file")
+              
+              if [ ! -f "${ENV_DIR}/${filename}" ]; then
+                echo "  📋 Copiando ${filename}"
+                cp -r "$file" "${ENV_DIR}/${filename}"
+              else
+                echo "  ⏭️  ${filename} ya existe en ${ENVIRONMENT}, usando versión local"
+              fi
+            done
+          fi
+
+          echo "✅ Sincronización completa"
+          ls -ltrh
 
       - name: Set AWS Role ARN based on environment
         id: aws-role
