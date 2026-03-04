@@ -46,7 +46,7 @@ jobs:
       TF_VAR_environment: ${{ github.event.inputs.environment }}
       TF_VAR_project_name: ${{github.event.inputs.working_directory}}
       TF_VAR_deploy_role_name: ${{ secrets.AWS_ROLE_NAME}}
-      WORKING_DIR: ${{ github.event.inputs.working_directory }}
+      WORKING_DIR: ${{ github.event.inputs.working_directory }}/${{ github.event.inputs.environment }}
       ENVIRONMENT: ${{ github.event.inputs.environment }}
       ACTION: ${{ github.event.inputs.action }}
       PROJECT: ${{ github.event.inputs.working_directory }}
@@ -81,7 +81,7 @@ jobs:
           echo "🔄 Sincronizando archivos de trunk a ${ENVIRONMENT}..."
 
           TRUNK_DIR="${PROJECT}/trunk"
-          ENV_DIR="${ENVIRONMENT}"
+          ENV_DIR="${WORKING_DIR}"
 
           if [ -d "$TRUNK_DIR" ]; then
             for file in "$TRUNK_DIR"/*.tf; do
