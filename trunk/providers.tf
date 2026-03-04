@@ -5,7 +5,7 @@ provider "aws" {
       project      = var.project_name
       CostCenter   = "10.20.30"
       Environment  = var.environment
-      Team = "InfraCloud"
+      Team_by = "InfraCloud"
 
     }
   }
