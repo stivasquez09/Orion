@@ -57,17 +57,17 @@ jobs:
       - name: 🔍 DEBUG - Ver estructura del repositorio
         run: |
           echo "📂 Contenido raíz del repositorio:"
-          ls -ltr
+          ls -la
           echo ""
           echo "📂 Estructura completa (primeros 2 niveles):"
           find . -maxdepth 2 -type d
           echo ""
-          echo "🔍 Buscando carpeta: ${{ env.ENVIRONMENT }}"
+          echo "🔍 Buscando carpeta: ${{ env.WORKING_DIR }}"
           if [ -d "${{ env.WORKING_DIR }}" ]; then
-            echo "✅ La carpeta ${{ env.ENVIRONMENT }} EXISTE"
-            ls -la "${{ env.ENVIRONMENT }}"
+            echo "✅ La carpeta ${{ env.WORKING_DIR }} EXISTE"
+            ls -la "${{ env.WORKING_DIR }}"
           else
-            echo "❌ La carpeta ${{ env.ENVIRONMENT }} NO EXISTE"
+            echo "❌ La carpeta ${{ env.WORKING_DIR }} NO EXISTE"
           fi
 
       - name: Display configuration
