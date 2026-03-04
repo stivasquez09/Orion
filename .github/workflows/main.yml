@@ -46,7 +46,7 @@ jobs:
       TF_VAR_environment: ${{ github.event.inputs.environment }}
       TF_VAR_project_name: ${{github.event.inputs.working_directory}}
       TF_VAR_deploy_role_name: ${{ secrets.AWS_ROLE_NAME}}
-      WORKING_DIR: ${{ github.event.inputs.working_directory }}/${{ github.event.inputs.environment }}
+      WORKING_DIR: ${{ github.event.inputs.working_directory }}
       ENVIRONMENT: ${{ github.event.inputs.environment }}
       ACTION: ${{ github.event.inputs.action }}
       PROJECT: ${{ github.event.inputs.working_directory }}
