@@ -101,7 +101,7 @@ jobs:
           fi
 
           echo "✅ Sincronización completa"
-          ls -ltrh
+          ls -ltrh "${ENV_DIR}/"
 
       - name: Set AWS Role ARN based on environment
         id: aws-role
