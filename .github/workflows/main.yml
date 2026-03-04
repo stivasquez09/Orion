@@ -79,7 +79,7 @@ jobs:
           fi
 
           echo "✅ Sincronización completa"
-          ls -ltrh "ENV_DIR/"
+          ls -ltrh "${ENV_DIR}/"
 
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
