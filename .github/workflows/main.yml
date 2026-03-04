@@ -60,6 +60,7 @@ jobs:
           echo "🔄 Sincronizando archivos de trunk a ${ENVIRONMENT}..."
           pwd
           ls -ltrh
+          cd ..
 
           TRUNK_DIR="${GITHUB_WORKSPACE}/trunk"
           ENV_DIR="${ENVIRONMENT}"
@@ -70,7 +71,7 @@ jobs:
               
               if [ ! -f "${ENV_DIR}/${filename}" ]; then
                 echo "  📋 Copiando ${filename}"
-                cp "$file" "${ENV_DIR}/${filename}"
+                cp -r "$file" "${ENV_DIR}/${filename}"
               else
                 echo "  ⏭️  ${filename} ya existe en ${ENVIRONMENT}, usando versión local"
               fi
