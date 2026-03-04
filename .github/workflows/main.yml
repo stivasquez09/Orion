@@ -76,28 +76,89 @@ jobs:
           echo "  📁 Directorio: ${{ env.WORKING_DIR }}"
           echo "  🌍 Ambiente: ${{ env.ENVIRONMENT }}"
           echo "  ⚡ Acción: ${{ env.ACTION }}"
+      - name: 🔍 DEBUG - Verificar estructura del repositorio
+        run: |
+          echo "📍 Directorio de trabajo: $(pwd)"
+          echo "📍 GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}"
+          echo ""
+          echo "📂 Estructura del proyecto ${PROJECT}:"
+          ls -la "${GITHUB_WORKSPACE}/${PROJECT}/"
+          echo ""
+          if [ -d "${GITHUB_WORKSPACE}/${PROJECT}/trunk" ]; then
+            echo "✅ trunk/ existe"
+            echo "📋 Contenido de trunk/:"
+            ls -la "${GITHUB_WORKSPACE}/${PROJECT}/trunk/"
+          else
+            echo "❌ trunk/ NO existe"
+          fi
+
       - name: 🔄 Sync trunk files to environment
         run: |
           echo "🔄 Sincronizando archivos de trunk a ${ENVIRONMENT}..."
+          echo ""
 
-          TRUNK_DIR="${PROJECT}/trunk"
-          ENV_DIR="${WORKING_DIR}"
+          # Usar rutas absolutas
+          TRUNK_DIR="${GITHUB_WORKSPACE}/${PROJECT}/trunk"
+          ENV_DIR="${GITHUB_WORKSPACE}/${WORKING_DIR}"
 
-          if [ -d "$TRUNK_DIR" ]; then
-            for file in "$TRUNK_DIR"/*.tf; do
-              filename=$(basename "$file")
-              
-              if [ ! -f "${ENV_DIR}/${filename}" ]; then
-                echo "  📋 Copiando ${filename}"
-                cp "$file" "${ENV_DIR}/${filename}"
-              else
-                echo "  ⏭️  ${filename} ya existe en ${ENVIRONMENT}, usando versión local"
-              fi
-            done
+          echo "📂 Rutas:"
+          echo "   Trunk:   ${TRUNK_DIR}"
+          echo "   Destino: ${ENV_DIR}"
+          echo ""
+
+          # Verificar trunk
+          if [ ! -d "$TRUNK_DIR" ]; then
+            echo "⚠️  Carpeta trunk no existe, omitiendo sincronización"
+            exit 0
           fi
 
+          echo "✅ Carpeta trunk encontrada"
+          echo ""
+
+          # Listar archivos .tf
+          echo "📋 Archivos .tf en trunk:"
+          find "$TRUNK_DIR" -maxdepth 1 -name "*.tf" -type f -exec basename {} \; 2>/dev/null | sort
+          echo ""
+
+          # Contar
+          TF_COUNT=$(find "$TRUNK_DIR" -maxdepth 1 -name "*.tf" -type f | wc -l)
+          echo "📊 Total: $TF_COUNT archivos"
+          echo ""
+
+          if [ "$TF_COUNT" -eq 0 ]; then
+            echo "⚠️  No hay archivos .tf en trunk"
+            exit 0
+          fi
+
+          # Copiar
+          echo "🔄 Iniciando copia..."
+          COPIED=0
+          SKIPPED=0
+
+          for file in "$TRUNK_DIR"/*.tf; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file")
+              dest="${ENV_DIR}/${filename}"
+              
+              if [ ! -f "$dest" ]; then
+                echo "  📋 ${filename}"
+                cp "$file" "$dest"
+                COPIED=$((COPIED + 1))
+              else
+                echo "  ⏭️  ${filename} (existe)"
+                SKIPPED=$((SKIPPED + 1))
+              fi
+            fi
+          done
+
+          echo ""
           echo "✅ Sincronización completa"
-          ls -ltrh
+          echo "   Copiados: $COPIED | Omitidos: $SKIPPED"
+
+      - name: 📂 Verificar archivos en destino
+        run: |
+          echo "📂 Archivos en ${WORKING_DIR}:"
+          ls -lh "${GITHUB_WORKSPACE}/${WORKING_DIR}/"
 
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
