@@ -55,12 +55,7 @@ resource "aws_config_conformance_pack" "ebs_unused" {
   name = "ebs-unused-volumes-pack"
 
   template_body = <<-EOT
-    Parameters:
-      RemediationRoleArn:
-        Type: String
-
     Resources:
-
       EbsVolumeUnusedRule:
         Type: AWS::Config::ConfigRule
         Properties:
@@ -72,7 +67,6 @@ resource "aws_config_conformance_pack" "ebs_unused" {
           Scope:
             ComplianceResourceTypes:
               - AWS::EC2::Volume
-
       EbsVolumeRemediation:
         Type: AWS::Config::RemediationConfiguration
         DependsOn: EbsVolumeUnusedRule
@@ -92,15 +86,10 @@ resource "aws_config_conformance_pack" "ebs_unused" {
             AutomationAssumeRole:
               StaticValue:
                 Values:
-                  - !Ref RemediationRoleArn
+                  - ${aws_iam_role.remediation.arn}
           ExecutionControls:
             SsmControls:
               ConcurrentExecutionRatePercentage: 25
               ErrorPercentage: 20
   EOT
-
-  input_parameter {
-    parameter_name  = "RemediationRoleArn"
-    parameter_value = aws_iam_role.remediation.arn
-  }
 }
