@@ -159,7 +159,6 @@ resource "aws_config_conformance_pack" "ebs_unused" {
           ConfigRuleName: ebs-volume-unused
           TargetType: SSM_DOCUMENT
           TargetId: AWS-DeleteEbsVolume
-          TargetVersion: "1"
           Automatic: true
           MaximumAutomaticAttempts: 3
           RetryAttemptSeconds: 60
