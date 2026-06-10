@@ -28,7 +28,7 @@ resource "aws_iam_role_policy" "remediation" {
     Statement = [
       {
         Effect   = "Allow"
-        Action   = ["ec2:DeleteVolume", "ec2:DescribeVolumes"]
+        Action   = ["ec2:DeleteVolume", "ec2:DescribeVolumes", "ec2:CreateSnapshot", "ec2:DescribeSnapshots"]
         Resource = "*"
       },
       {
