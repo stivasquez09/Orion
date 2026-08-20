@@ -66,7 +66,7 @@
   <table id="results-table">
     <thead>
       <tr>
-        <th id="col-header">Cuenta</th>
+        <th>Cuenta</th>
         <th>VPC</th>
         <th>Subnet</th>
         <th>CIDR</th>
@@ -100,7 +100,7 @@ const searchInput = document.getElementById("search");
 const optionsBox = document.getElementById("options");
 const sectionLabel = document.getElementById("section-label");
 const tbody = document.getElementById("results-body");
-const colHeader = document.getElementById("col-header");
+														
 const accounts = {{ accounts | tojson }};
 
 let allSubnets = null;
@@ -118,13 +118,13 @@ function statusBadge(status) {
   return '<span class="badge ' + status + '">' + labels[status] + "</span>";
 }
 
-function renderRows(rows, groupByVpc) {
-  colHeader.textContent = groupByVpc ? "VPC" : "Cuenta";
+function renderRows(rows) {
+														
   tbody.innerHTML = rows.map(function (s) {
     return "<tr>" +
-      "<td>" + (groupByVpc ? s.vpc_id : s.account_id) + "</td>" +
-      "<td>" + (groupByVpc ? s.subnet_id : s.vpc_id) + "</td>" +
-      "<td>" + (groupByVpc ? "" : s.subnet_id) + "</td>" +
+      "<td>" + s.account_id + "</td>" +
+      "<td>" + s.vpc_id + "</td>" +
+      "<td>" + s.subnet_id + "</td>" +
       "<td>" + s.cidr + "</td>" +
       "<td>" + s.available_ips + " / " + s.total_ips + "</td>" +
       "<td>" + s.used_pct + "%</td>" +
@@ -154,7 +154,7 @@ searchInput.addEventListener("input", async function () {
         const data = await ensureData();
         const filtered = data.filter(function (s) { return s.account_id === accountId; });
         sectionLabel.textContent = "Subnets de la cuenta " + accountId + " (" + filtered.length + ")";
-        renderRows(filtered, true);
+        renderRows(filtered);
       });
       optionsBox.appendChild(opt);
     });
